@@ -1,0 +1,75 @@
+---
+title: "Impact of variable Irrigation treatments on plant leaf number"
+author: "Rupinder Sandhu"
+date: "5/3/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, }
+# Read the csv file
+irri=read.csv(file = "Irrigation Amounts-leaf no.csv",header = TRUE)
+
+library(lattice)
+library(MASS)
+library(drc) # drc package required to fit log-logistic or sigmoid model using the drm package in R
+
+# checking the trend of data points in every irrigation treatments
+
+plot(Leafno~ Day,data=irri, xlab="Weeks after planting",ylab = expression(paste("Leaves plant"^"-1","")),
+     ylim=c(0,1000),xlim=c(21,100),subset=Trt=="FULL",cex.lab=1.3,cex.axis=1.1,cex=0.8, pch=1, col="black")
+plot(Leafno~ Day,data=irri, xlab="Weeks after planting",ylab = expression(paste("Leaves plant"^"-1","")),
+     ylim=c(0,1000),xlim=c(21,100),subset=Trt=="LIM",cex.lab=1.3,cex.axis=1.1,cex=0.8, pch=1, col="RED")
+plot(Leafno~ Day,data=irri, xlab="Weeks after planting",ylab = expression(paste("Leaves plant"^"-1","")),
+     ylim=c(0,1000),xlim=c(21,100),subset=Trt=="DEF",cex.lab=1.3,cex.axis=1.1,cex=0.8, pch=1, col="blue")
+
+
+# Fitting 4-parameter log-logistic model to the plant leaf number data using LL.4 function in drc
+plot(Leafno~ Day,data=irri, type="n",xlab="Weeks after planting",ylab = expression(paste("Leaves plant"^"-1","")),
+     ylim=c(0,1000),xlim=c(21,100),cex.lab=1.3,cex.axis=1.1,cex=0.8, pch=1, col="blue")
+
+# Full irrigation treatment
+LogisticFULL <- drm(Leafno~ Day,data=irri,subset=Trt=="FULL",fct =LL.4(names = c("Slope","Lower Limit", "Upper Limit", "ED50")))
+summary(LogisticFULL)
+modelFit(LogisticFULL)
+plot(LogisticFULL, add=T,lty=1,pch=1,lwd=2.5,bp=0.1,xaxt='n',cex.lab=1.3,cex.axis=1.1,xlab="Weeks after planting",
+xlim=c(21,84),ylab = expression(paste("Leaves plant"^"-1","")),ylim=c(0,700), col="black")
+
+# Fititng linear model to full irrigation treatment to compare two models using Akaike information criterion (AIC) approach.
+linear=lm(Leafno~ Day,data=irri, subset=Trt=="FULL")
+summary (linear)
+AIC(LogisticFULL, linear)
+# lower the AIC value, better is the model fit and less loss of information while fitting predictive model to the data.
+
+# Limited Irrigation treatment
+LogisticLIM <- drm(Leafno~ Day,data=irri,subset=Trt=="LIM",fct = LL.4(names = c("Slope","Lower Limit", "Upper Limit", "ED50")))
+summary(LogisticLIM)
+modelFit(LogisticLIM)
+plot(LogisticLIM,add=T,lty=1,pch=1,bp=0.1,lwd=2.5,xaxt='n',cex.lab=1.3,cex.axis=1.1,xlab="Weeks after transplanting",xlim=c(21,84),ylab = expression(paste("Leaves plant"^"-1","")),ylim=c(0,800), col="red")
+
+# Deficit Irrigation treatment
+LogisticDEF <- drm(Leafno~ Day,data=irri,subset=Trt=="DEF",fct =LL.4(names = c("Slope","Lower Limit", "Upper Limit", "ED50")))
+summary(LogisticDEF)
+modelFit(LogisticDEF)
+plot(LogisticDEF,add=T,lty=1,pch=1,lwd=2.5,xaxt='n',cex.lab=1.3,cex.axis=1.1,xlab="Weeks after transplanting",xlim=c(21,84),ylab = expression(paste("Leaves plant"^"-1","")),ylim=c(0,800), col="green")
+
+
+# comparing model parameters of three fitted curves to the irrigation treatments
+Logistic_leaf <- drm(Leafno~ Day, Trt, data=irri,fct =LL.4(names = c("Slope","Lower Limit", "Upper Limit", "ED50")))
+summary(Logistic_leaf)
+modelFit(Logistic_leaf)
+compParm(Logistic_leaf, "Upper Limit", "-")
+compParm(Logistic_leaf, "ED50", "-")
+compParm(Logistic_leaf, "Lower Limit", "-")
+compParm(Logistic_leaf, "Slope", "-")
+
+# No significant difference in model parameters was observed between any of the fitted curves to irrigation treatments.
+
+```
+
