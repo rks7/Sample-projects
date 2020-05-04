@@ -1,0 +1,38 @@
+---
+title: "Precipitation at SCAL"
+author: "Rupinder Sandhu"
+date: "5/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Monthly precipitation at SCAL from 2005 to 2010
+
+```{r}
+#install.packages("plotly")
+#install.packages("Dodge")
+library(Dodge)
+library(ggplot2)
+#install.packages("magrittr")
+library(magrittr)
+library(plotly)
+
+library(dplyr)
+library(lubridate)
+
+ # Import csv file
+ScalWeather=read.csv("Weather Data.csv",header = TRUE)
+str (ScalWeather)
+head(ScalWeather$Date)
+
+
+#Plot data
+
+ggplot(ScalWeather, aes(x=Month,y=Rain, fill=Year))+ geom_bar(stat="identity", position = "stack") +
+  ggtitle("Daily Precipitation\n Clay Center") + labs( x= "Month", y= "Precipitation", fill = NULL)+ 
+  ggtitle("Daily Precipitation - SCAL\n 2005-2010") +facet_grid(Year~.)+theme_bw()
+  
+```
+
